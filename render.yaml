@@ -1,0 +1,26 @@
+# Render Blueprint for the API: New > Blueprint in the Render dashboard,
+# pick this repo, then fill in the values marked "sync: false".
+services:
+  - type: web
+    name: kooked-api
+    runtime: node
+    plan: free
+    # Closest Render region to Indian users
+    region: singapore
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Leave empty to run in mock mode; add your AI Studio key later to switch to Gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      # Your Vercel URL, e.g. https://kooked.vercel.app (no trailing slash)
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: RATE_LIMIT_PER_HOUR
+        value: "10"

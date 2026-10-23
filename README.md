@@ -94,10 +94,11 @@ If an AI call fails or returns malformed JSON, the server retries once. If the r
 
 ## Deploying
 
-**Server → Render** (Web Service)
-- Root directory: `server`. Build command `npm install`, start command `npm start`.
-- Env: `GEMINI_API_KEY`, `GEMINI_MODEL`, `CLIENT_ORIGIN=https://<your-vercel-domain>`, `RATE_LIMIT_PER_HOUR`.
+**Server → Render** (Blueprint)
+- In Render: **New → Blueprint**, pick this repo. `render.yaml` sets up the `kooked-api` web service (root `server`, free plan, Singapore).
+- Fill in `CLIENT_ORIGIN=https://<your-vercel-domain>`. Leave `GEMINI_API_KEY` empty to launch in mock mode; add it later under the service's **Environment** tab and the service restarts using Gemini.
 - `trust proxy` is already set, so rate limiting sees real client IPs behind Render's proxy.
+- The free plan sleeps after ~15 minutes idle and takes up to a minute to wake. The client pings `/api/stats` on page load, which starts the wake-up while the visitor picks a file.
 
 **Client → Vercel**
 - Root directory: `client`. Framework preset Vite (build `npm run build`, output `dist`).
