@@ -5,6 +5,14 @@ import { rateLimit } from "express-rate-limit";
 import { pdfToText, detectLinks, cleanText, MIN_CHARS } from "../lib/text.js";
 import { scoreResume } from "../lib/score.js";
 
+// Practical tip shown under a not-a-resume roast.
+const HINTS = {
+  scanned:
+    "If that was your resume: it's an image, so company ATS software can't read it either. Export it from Word, Google Docs or Overleaf as a normal PDF, or paste the text.",
+  short: "Paste your whole resume: name, education with 10th/12th, skills, projects, internships and achievements.",
+  wrong: "Upload your actual resume as a PDF, or paste its text.",
+};
+
 class HttpError extends Error {
   constructor(status, message) {
     super(message);
@@ -64,8 +72,13 @@ export function createRoastRouter({ provider, cache, stats, ratePerHour = 10 }) 
       } else if (typeof req.body?.text === "string") {
         raw = req.body.text;
       }
-      if (raw.trim().length < MIN_CHARS)
-        throw new HttpError(400, "Not enough text to cook 🫗 Scanned PDF? Paste the text instead.");
+      // Nothing readable (scanned/image PDF, or a two-word paste): roast that instead of erroring.
+      if (raw.trim().length < MIN_CHARS) {
+        const documentType = req.file ? "scanned PDF with no readable text" : "a few random words";
+        const roast = await provider.roastNotResume({ documentType, firstName: null });
+        await stats.increment();
+        return res.json({ notResume: true, documentType, hint: req.file ? HINTS.scanned : HINTS.short, ...roast, cached: false });
+      }
 
       // 2. Detect links before stripping. 3. Strip PII + truncate.
       const links = detectLinks(raw);
@@ -82,7 +95,7 @@ export function createRoastRouter({ provider, cache, stats, ratePerHour = 10 }) 
       // Not a resume: no score, just roast them for what they uploaded.
       if (!facts.looksLikeResume) {
         const roast = await provider.roastNotResume({ documentType: facts.documentType, firstName: facts.firstName });
-        const result = { notResume: true, documentType: facts.documentType, ...roast };
+        const result = { notResume: true, documentType: facts.documentType, hint: HINTS.wrong, ...roast };
         await cache.set(key, result);
         await stats.increment();
         return res.json({ ...result, cached: false });

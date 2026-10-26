@@ -7,7 +7,7 @@ import { RAIN, pickReaction } from "../reactions.js";
 
 // Shown when the upload isn't a resume: no score, just a roast of whatever they sent.
 export default function NotResume({ result, onReset }) {
-  const { documentType, roast, cached } = result;
+  const { documentType, roast, cached, hint } = result;
   const [reaction] = useState(() => pickReaction("notResume"));
   const order = useMemo(() => String(Math.floor(Math.random() * 9000) + 1000), []);
   const lines = roast.split(/\n+/).map((l) => l.trim()).filter(Boolean);
@@ -86,6 +86,16 @@ export default function NotResume({ result, onReset }) {
           </div>
         </div>
       </div>
+
+      {hint && (
+        <Reveal tilt={-1.5} className="mx-auto mt-12 max-w-sm">
+          <div className="relative bg-[#ffe066] px-5 pb-4 pt-6 text-ink shadow-[0_12px_20px_-8px_rgba(0,0,0,0.6)]">
+            <span className="tape -top-3 left-1/2 -translate-x-1/2 rotate-[3deg]" />
+            <p className="font-marker text-lg leading-none">okay but for real 👇</p>
+            <p className="mt-1 font-hand text-[17px] leading-snug">{hint}</p>
+          </div>
+        </Reveal>
+      )}
 
       <ShareSection result={result} reaction={reaction} />
 

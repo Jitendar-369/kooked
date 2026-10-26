@@ -53,8 +53,11 @@ test("PDF upload works and matches text score", async () => {
 
 test("error cases", async () => {
   let r = await post(srv.base, { text: "too short" });
-  assert.equal(r.status, 400);
-  assert.match((await r.json()).error, /paste the text/i);
+  assert.equal(r.status, 200);
+  const short = await r.json();
+  assert.equal(short.notResume, true);
+  assert.equal(short.documentType, "a few random words");
+  assert.match(short.hint, /Paste your whole resume/);
 
   r = await post(srv.base, { text: "Once upon a time there was a dragon who liked to eat mangoes all day long by the river." });
   assert.equal(r.status, 200);
@@ -149,4 +152,25 @@ test("malformed first response is retried successfully", async () => {
   } finally {
     server.close();
   }
+});
+
+test("a PDF with no text gets roasted with an ATS tip, not an error", async () => {
+  // Minimal valid PDF with an empty page (what a scanned/image-only PDF looks like to pdf-parse).
+  const objs = ["<< /Type /Catalog /Pages 2 0 R >>", "<< /Type /Pages /Kids [3 0 R] /Count 1 >>", "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>"];
+  let pdf = "%PDF-1.4\n";
+  const offsets = objs.map((o, i) => {
+    const at = pdf.length;
+    pdf += `${i + 1} 0 obj\n${o}\nendobj\n`;
+    return at;
+  });
+  const xref = pdf.length;
+  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("")}trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  const fd = new FormData();
+  fd.append("resume", new Blob([pdf], { type: "application/pdf" }), "scan.pdf");
+  const r = await fetch(`${srv.base}/roast`, { method: "POST", body: fd });
+  assert.equal(r.status, 200);
+  const body = await r.json();
+  assert.equal(body.notResume, true);
+  assert.equal(body.documentType, "scanned PDF with no readable text");
+  assert.match(body.hint, /ATS/);
 });

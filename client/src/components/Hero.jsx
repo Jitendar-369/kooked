@@ -4,16 +4,30 @@ import Reveal from "./Reveal.jsx";
 import { Arrow, Circle, Underline } from "./Doodles.jsx";
 import Logo from "./Logo.jsx";
 
-const PLACEHOLDER = `B.Tech CSE, 2026 batch. CGPA: 7.2
+const PLACEHOLDER = `Rahul Sharma
+B.Tech Computer Science, ABC Institute of Technology (2022–2026)
+github.com/rahul · linkedin.com/in/rahul
 
-Skills: C++, Python, React, Node.js, MongoDB
+EDUCATION
+B.Tech CSE: CGPA 7.2 / 10
+Class 12 (State Board): 78%
+Class 10 (CBSE): 85%
 
-Projects:
-- Weather App: fetches weather using an API
-- Campus Lost & Found: MERN app with auth, 200 users
+SKILLS
+Languages: C++, Python, JavaScript
+Web: React, Node.js, Express, MongoDB
+Tools: Git, Docker, Postman
 
-Internships: none yet
-Achievements: 150 LeetCode problems`;
+PROJECTS
+Campus Lost & Found: MERN app with JWT auth, 200+ users
+Weather App: React app using OpenWeather API
+
+EXPERIENCE
+Web Development Intern, XYZ Startup (May–Jul 2025)
+
+ACHIEVEMENTS
+150+ LeetCode problems · SIH 2025 internal round
+AWS Cloud Practitioner`;
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -43,13 +57,13 @@ export default function Hero({ onCook, error, totalRoasts }) {
     setFile(f);
   }
 
-  const ready = tab === "pdf" ? Boolean(file) : text.trim().length >= 40;
+  const ready = tab === "pdf" ? Boolean(file) : text.trim().length > 0;
 
   function submit(e) {
     e.preventDefault();
     if (!ready) {
       setNudge((n) => n + 1);
-      setLocalError(tab === "pdf" ? "Drop a PDF first, bro. The tawa is waiting 🍳" : "Give me at least a few lines to cook (40+ characters) ✍️");
+      setLocalError(tab === "pdf" ? "Drop a PDF first, bro. The tawa is waiting 🍳" : "Paste something first. Anything. We dare you ✍️");
       return;
     }
     onCook(tab === "pdf" ? { file } : { text });
@@ -157,7 +171,7 @@ export default function Hero({ onCook, error, totalRoasts }) {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={PLACEHOLDER}
-                rows={10}
+                rows={14}
                 maxLength={20000}
                 className="ruled block min-h-44 w-full resize-y rounded-md border-2 border-ink/30 bg-transparent px-3 py-1 font-hand text-[16px] leading-7 text-ink placeholder:text-ink/35 focus:border-ink/70 focus:outline-none"
               />

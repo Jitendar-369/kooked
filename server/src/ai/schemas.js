@@ -26,7 +26,7 @@ export const extractionSchema = {
 export const notResumeSchema = {
   type: "object",
   properties: {
-    roast: { type: "string", description: "3-4 savage lines with 4-7 varied emojis" },
+    roast: { type: "string", description: "4-5 savage lines with 4-8 varied emojis" },
     shareLine: { type: "string", maxLength: 90 },
   },
   required: ["roast", "shareLine"],
@@ -35,7 +35,7 @@ export const notResumeSchema = {
 export const roastSchema = {
   type: "object",
   properties: {
-    roast: { type: "string", description: "3-4 punchy lines with 4-7 varied emojis" },
+    roast: { type: "string", description: "4-5 savage lines, each a specific jab, 4-8 varied emojis" },
     shareLine: { type: "string", maxLength: 90 },
     strengths: { type: "array", items: { type: "string" }, maxItems: 3 },
     weaknesses: { type: "array", items: { type: "string" }, maxItems: 3 },
