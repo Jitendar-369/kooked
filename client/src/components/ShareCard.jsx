@@ -1,64 +1,84 @@
 import { forwardRef } from "react";
 import { colorFor } from "../levels.js";
 
-export const SITE_URL = (import.meta.env.VITE_SITE_URL || window.location.host).replace(/^https?:\/\//, "");
+export const SITE_URL = (import.meta.env.VITE_SITE_URL || window.location.host).replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-// Fixed 1080×1920 (9:16) Instagram-story canvas. Rendered off-screen and captured with html-to-image.
-const ShareCard = forwardRef(function ShareCard({ score, level, shareLine }, ref) {
-  const { hex, glow } = colorFor(level);
-  const R = 300;
-  const C = 2 * Math.PI * R;
+// Fixed 1080×1920 (9:16) story card: chalkboard + taped receipt. Plain CSS only so html-to-image renders it reliably.
+const ShareCard = forwardRef(function ShareCard({ score, level, shareLine, reaction }, ref) {
+  const { hex } = colorFor(level);
+  const [emoji, caption] = reaction;
   return (
     <div
       ref={ref}
       style={{
         width: 1080,
         height: 1920,
-        background: `radial-gradient(90% 55% at 50% 105%, rgba(255,90,20,0.55), transparent 65%), radial-gradient(70% 40% at 50% 38%, ${glow}, transparent 70%), #0c0907`,
-        color: "#fff4e6",
-        fontFamily: '"Space Grotesk Variable", system-ui, sans-serif',
+        boxSizing: "border-box",
+        padding: "120px 90px 100px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "140px 90px 110px",
-        boxSizing: "border-box",
         position: "relative",
         overflow: "hidden",
+        color: "#f1eee4",
+        fontFamily: '"Kalam", cursive',
+        background:
+          "radial-gradient(45% 30% at 18% 18%, rgba(255,255,255,0.06), transparent 70%), radial-gradient(60% 30% at 50% 100%, rgba(240,120,40,0.28), transparent 70%), radial-gradient(130% 100% at 50% 50%, transparent 55%, rgba(0,0,0,0.6)), #1c2420",
       }}
     >
-      <div style={{ fontSize: 34, letterSpacing: "0.35em", color: "#ffb31a", fontWeight: 700 }}>🔥 PLACEMENT COOKED REPORT 🔥</div>
-      <div style={{ position: "relative", width: 700, height: 700, marginTop: 80 }}>
-        <svg width="700" height="700" viewBox="0 0 700 700" style={{ transform: "rotate(-90deg)" }}>
-          <circle cx="350" cy="350" r={R} fill="none" stroke="#2a201a" strokeWidth="44" />
-          <circle cx="350" cy="350" r={R} fill="none" stroke={hex} strokeWidth="44" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - score / 100)} />
-        </svg>
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ fontFamily: '"Bowlby One", Impact, sans-serif', fontSize: 260, lineHeight: 1, color: hex }}>{score}</div>
-          <div style={{ fontSize: 40, letterSpacing: "0.3em", color: "#a8998c", fontWeight: 700, marginTop: 10 }}>% COOKED</div>
-        </div>
-      </div>
-      <div style={{ fontFamily: '"Bowlby One", Impact, sans-serif', fontSize: 104, color: hex, marginTop: 50, textAlign: "center", lineHeight: 1.05 }}>{level.label}</div>
-      <div style={{ fontSize: 40, color: "#a8998c", marginTop: 20, textAlign: "center" }}>{level.tagline}</div>
+      <div style={{ fontFamily: '"Caveat Variable", cursive', fontSize: 64, fontWeight: 700, transform: "rotate(-2deg)" }}>~ placement cooked report ~</div>
+
       <div
         style={{
           marginTop: 70,
-          padding: "44px 56px",
-          borderRadius: 48,
-          background: "rgba(255,106,26,0.12)",
-          border: "3px solid rgba(255,106,26,0.45)",
-          fontSize: 54,
-          fontWeight: 600,
-          lineHeight: 1.3,
-          textAlign: "center",
-          width: "100%",
+          width: 860,
+          background: "#f7f0dc",
+          color: "#2a2420",
+          padding: "70px 60px 60px",
           boxSizing: "border-box",
+          transform: "rotate(-1.5deg)",
+          boxShadow: "0 40px 60px -20px rgba(0,0,0,0.75)",
+          position: "relative",
+          textAlign: "center",
+          borderRadius: "30px 6px 24px 8px / 8px 26px 6px 30px",
         }}
       >
-        “{shareLine}”
+        <div style={{ position: "absolute", top: -26, left: 70, width: 220, height: 56, background: "rgba(233,220,180,0.85)", transform: "rotate(-6deg)" }} />
+        <div style={{ position: "absolute", top: -26, right: 70, width: 220, height: 56, background: "rgba(233,220,180,0.85)", transform: "rotate(5deg)" }} />
+        <div style={{ fontFamily: '"Courier Prime", monospace', fontSize: 30, letterSpacing: "0.2em", fontWeight: 700, color: "#6b6156" }}>ORDER UP · TOTAL</div>
+        <div style={{ fontFamily: '"Permanent Marker", cursive', fontSize: 300, lineHeight: 1, marginTop: 20, color: hex }}>{score}%</div>
+        <div style={{ fontFamily: '"Courier Prime", monospace', fontSize: 44, fontWeight: 700, letterSpacing: "0.15em" }}>COOKED</div>
+        <div
+          style={{
+            display: "inline-block",
+            marginTop: 50,
+            padding: "10px 36px",
+            border: `8px solid ${hex}`,
+            outline: `4px solid ${hex}`,
+            outlineOffset: 8,
+            borderRadius: 12,
+            color: hex,
+            fontFamily: '"Permanent Marker", cursive',
+            fontSize: 86,
+            lineHeight: 1.1,
+            transform: "rotate(-6deg)",
+            textTransform: "uppercase",
+          }}
+        >
+          {level.label}
+        </div>
+        <div style={{ marginTop: 50, borderTop: "4px dashed rgba(42,36,32,0.45)" }} />
+        <div style={{ marginTop: 44, fontSize: 52, lineHeight: 1.3, fontWeight: 700 }}>“{shareLine}”</div>
       </div>
+
+      <div style={{ marginTop: 70, display: "flex", alignItems: "center", gap: 34, transform: "rotate(2deg)" }}>
+        <div style={{ width: 190, height: 190, borderRadius: "50%", background: "#f2b230", border: "8px solid #2a2420", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 110, boxShadow: "10px 12px 0 #000" }}>{emoji}</div>
+        <div style={{ maxWidth: 520, background: "#2a2420", color: "#f7f0dc", padding: "14px 26px", fontSize: 44, lineHeight: 1.2, transform: "rotate(-3deg)" }}>{caption}</div>
+      </div>
+
       <div style={{ marginTop: "auto", textAlign: "center" }}>
-        <div style={{ fontSize: 38, color: "#a8998c" }}>How cooked are you?</div>
-        <div style={{ fontFamily: '"Bowlby One", Impact, sans-serif', fontSize: 52, color: "#ffb31a", marginTop: 12 }}>{SITE_URL}</div>
+        <div style={{ fontFamily: '"Caveat Variable", cursive', fontSize: 58, fontWeight: 700 }}>how cooked are you? 👇</div>
+        <div style={{ fontFamily: '"Permanent Marker", cursive', fontSize: 64, color: "#f2b230", marginTop: 8 }}>{SITE_URL}</div>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { extractionSchema, roastSchema, normalizeFacts, normalizeRoast } from "./schemas.js";
+import { pickVariety } from "./variety.js";
 import { EXTRACT_SYSTEM, ROAST_SYSTEM, extractPrompt, roastPrompt } from "./prompts.js";
 
 export function createGeminiProvider({ apiKey, model = "gemini-3.5-flash", client } = {}) {
@@ -43,7 +44,7 @@ export function createGeminiProvider({ apiKey, model = "gemini-3.5-flash", clien
     roast: (input) =>
       callJson({
         system: ROAST_SYSTEM,
-        prompt: roastPrompt(input),
+        prompt: roastPrompt({ ...input, variety: pickVariety() }),
         schema: roastSchema,
         temperature: 0.9,
         normalize: normalizeRoast,

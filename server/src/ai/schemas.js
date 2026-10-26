@@ -22,7 +22,7 @@ export const extractionSchema = {
 export const roastSchema = {
   type: "object",
   properties: {
-    roast: { type: "string", description: "2-3 punchy lines" },
+    roast: { type: "string", description: "3-4 punchy lines with 4-7 varied emojis" },
     shareLine: { type: "string", maxLength: 90 },
     strengths: { type: "array", items: { type: "string" }, maxItems: 3 },
     weaknesses: { type: "array", items: { type: "string" }, maxItems: 3 },
