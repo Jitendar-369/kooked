@@ -174,3 +174,17 @@ test("a PDF with no text gets roasted with an ATS tip, not an error", async () =
   assert.equal(body.documentType, "scanned PDF with no readable text");
   assert.match(body.hint, /ATS/);
 });
+
+test("Gemini rate limit is not retried and returns a friendly 503", async () => {
+  const quota = Object.assign(new Error("RESOURCE_EXHAUSTED: quota exceeded"), { status: 429 });
+  const client = fakeGenAI([quota, quota]);
+  const { server, base } = await serve(createApp({ provider: createGeminiProvider({ client, model: "m" }) }));
+  try {
+    const r = await post(base, { text: weak });
+    assert.equal(r.status, 503);
+    assert.match((await r.json()).error, /Try again in a minute/);
+    assert.equal(client.calls.length, 1);
+  } finally {
+    server.close();
+  }
+});

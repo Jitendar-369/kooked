@@ -122,7 +122,9 @@ export function createRoastRouter({ provider, cache, stats, ratePerHour = 10 }) 
 export function errorHandler(err, _req, res, _next) {
   if (err instanceof HttpError) return res.status(err.status).json({ error: err.message });
   if (err?.code === "AI_FAILED") {
-    console.error("AI failure:", err.cause?.message ?? err.message);
+    console.error(`AI failure: ${err.status ? `HTTP ${err.status}` : "no status"} (details above)`);
+    if (err.status === 429)
+      return res.status(503).json({ error: "Too many people getting kooked right now 🥵 The kitchen's slammed. Try again in a minute." });
     return res.status(502).json({ error: "The oven exploded. Try again." });
   }
   if (err?.type === "entity.too.large") return res.status(413).json({ error: "That's a novel, not a resume 📚" });
