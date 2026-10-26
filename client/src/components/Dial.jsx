@@ -84,7 +84,7 @@ export default function Dial({ score }) {
       </svg>
       <div className="-mt-1 text-center">
         <span className="font-marker text-6xl leading-none tabular-nums">{shown}</span>
-        <span className="ml-1 font-mono text-lg font-bold">% COOKED</span>
+        <span className="ml-1 font-mono text-lg font-bold">% KOOKED</span>
       </div>
     </div>
   );

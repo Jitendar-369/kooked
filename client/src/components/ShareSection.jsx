@@ -29,7 +29,7 @@ export default function ShareSection({ result, reaction }) {
         const blob = await renderCard(cardRef.current);
         if (!alive) return;
         blobRef.current = blob;
-        const file = new File([blob], "cooked-report.png", { type: "image/png" });
+        const file = new File([blob], "kooked-report.png", { type: "image/png" });
         setCanShareFiles(Boolean(navigator.canShare?.({ files: [file] })));
         setStatus("ready");
       } catch {
@@ -55,7 +55,7 @@ export default function ShareSection({ result, reaction }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `placement-cooked-${result.score}.png`;
+      a.download = result.notResume ? "kooked-not-a-resume.png" : `kooked-${result.score}.png`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -70,8 +70,8 @@ export default function ShareSection({ result, reaction }) {
     setMsg("");
     try {
       const blob = await getBlob();
-      const file = new File([blob], "cooked-report.png", { type: "image/png" });
-      await navigator.share({ files: [file], title: "Placement Cooked Meter", text: `${result.shareLine} ${SITE_URL}` });
+      const file = new File([blob], "kooked-report.png", { type: "image/png" });
+      await navigator.share({ files: [file], title: "Kooked", text: `${result.shareLine} ${SITE_URL}` });
     } catch (e) {
       if (e?.name !== "AbortError") setMsg("Sharing failed. Download the card and post it manually.");
     }
@@ -98,7 +98,7 @@ export default function ShareSection({ result, reaction }) {
 
       {/* Off-screen wrapper: the card itself stays unpositioned so html-to-image captures it correctly. */}
       <div aria-hidden="true" style={{ position: "fixed", left: -20000, top: 0, pointerEvents: "none" }}>
-        <ShareCard ref={cardRef} score={result.score} level={result.level} shareLine={result.shareLine} reaction={reaction} />
+        <ShareCard ref={cardRef} result={result} reaction={reaction} />
       </div>
     </Reveal>
   );

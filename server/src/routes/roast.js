@@ -78,7 +78,15 @@ export function createRoastRouter({ provider, cache, stats, ratePerHour = 10 }) 
 
       // 5. Extraction
       const facts = await provider.extract(clean);
-      if (!facts.looksLikeResume) throw new HttpError(422, "That doesn't look like a resume, bro 💀");
+
+      // Not a resume: no score, just roast them for what they uploaded.
+      if (!facts.looksLikeResume) {
+        const roast = await provider.roastNotResume({ documentType: facts.documentType, firstName: facts.firstName });
+        const result = { notResume: true, documentType: facts.documentType, ...roast };
+        await cache.set(key, result);
+        await stats.increment();
+        return res.json({ ...result, cached: false });
+      }
 
       // 6. Deterministic score
       const { score, level, reasons } = scoreResume(facts, links);

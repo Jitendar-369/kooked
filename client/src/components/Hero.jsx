@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import ErrorBanner from "./ErrorBanner.jsx";
 import Reveal from "./Reveal.jsx";
-import { Arrow, Circle, Flame, Underline } from "./Doodles.jsx";
+import { Arrow, Circle, Underline } from "./Doodles.jsx";
+import Logo from "./Logo.jsx";
 
 const PLACEHOLDER = `B.Tech CSE, 2026 batch. CGPA: 7.2
 
@@ -18,7 +19,8 @@ const MAX_BYTES = 2 * 1024 * 1024;
 
 const MENU = [
   ["Cooked Score (0–100)", "FREE"],
-  ["One brutal roast", "FREE"],
+  ["One brutal roast (with your name on it)", "FREE"],
+  ["Animated reaction sticker", "FREE"],
   ["Itemised bill: why that score", "FREE"],
   ["4-week un-cook recipe", "FREE"],
   ["Ego damage", "incl."],
@@ -59,14 +61,13 @@ export default function Hero({ onCook, error, totalRoasts }) {
         <Reveal tilt={-2} className="inline-block">
           <p className="chalk-text font-chalk text-2xl sm:text-3xl">~ today's special ~</p>
         </Reveal>
-        <h1 className="relative mt-1">
-          <span className="chalk-text block font-chalk text-[3.4rem] font-bold leading-[0.85] sm:text-7xl">Placement</span>
-          <span className="relative inline-block">
-            <span className="block -rotate-2 font-marker text-[3.1rem] leading-none text-haldi drop-shadow-[3px_3px_0_rgba(0,0,0,0.45)] sm:text-7xl">COOKED</span>
-            <Flame className="absolute -right-9 -top-6 h-14 w-10 rotate-12 sm:-right-12 sm:h-20 sm:w-14" />
+        <h1 className="relative mt-2 flex flex-col items-center">
+          <span className="flex items-center gap-3">
+            <Logo className="pop h-20 w-20 -rotate-6 sm:h-24 sm:w-24" />
+            <span className="relative -rotate-2 font-marker text-[4.4rem] leading-none text-haldi drop-shadow-[4px_4px_0_rgba(0,0,0,0.5)] sm:text-8xl">KOOKED</span>
           </span>
-          <span className="block rotate-1 font-marker text-[2.4rem] leading-none text-tomato drop-shadow-[3px_3px_0_rgba(0,0,0,0.45)] sm:text-6xl">METER</span>
-          <Underline className="mx-auto mt-1 h-5 w-56 sm:w-80" />
+          <span className="chalk-text mt-2 font-chalk text-[2rem] font-bold leading-none sm:text-4xl">placement cooked meter</span>
+          <Underline className="mx-auto mt-1 h-5 w-60 sm:w-80" />
         </h1>
         <p className="chalk-text mx-auto mt-3 max-w-sm font-hand text-lg leading-snug sm:text-xl">
           Find out how cooked you are <span className="whitespace-nowrap text-haldi">before placements cook you.</span>

@@ -1,0 +1,12 @@
+// The KOOKED mark: a hand-inked K on a haldi-yellow badge, with a flame licking off the top arm.
+export default function Logo({ className = "", title = "Kooked" }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} role="img" aria-label={title}>
+      <path d="M50 6 C 76 5, 95 24, 94 50 C 95 77, 75 95, 49 94 C 24 95, 5 76, 6 50 C 5 25, 24 6, 50 6 Z" fill="#f2b230" stroke="#2a2420" strokeWidth="5" />
+      <path d="M31 25 L 44 24 L 45 76 L 32 77 Z" fill="#2a2420" />
+      <path d="M44 53 L 62 27 L 76 28 L 55 55 Z" fill="#2a2420" />
+      <path d="M51 50 L 78 74 L 63 77 L 44 58 Z" fill="#2a2420" />
+      <path className="flame" d="M70 31 C 62 30, 60 22, 64 15 C 66 19, 68 19, 68 16 C 68 10, 72 6, 75 3 C 75 10, 81 13, 80 21 C 80 27, 76 31, 70 31 Z" fill="#d93a26" stroke="#2a2420" strokeWidth="2.5" strokeLinejoin="round" />
+    </svg>
+  );
+}

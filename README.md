@@ -1,4 +1,4 @@
-# 🔥 Placement Cooked Meter
+# 🔥 Kooked: placement cooked meter
 
 > Find out how cooked you are before placements cook you.
 
@@ -18,9 +18,12 @@ The AI **never decides the score**. `POST /api/roast` runs these steps:
 2. Detect GitHub, LinkedIn and portfolio links in the raw text.
 3. Strip emails, phone numbers (including +91 formats) and URLs, then truncate to 12k chars. **Contact details never reach the AI.**
 4. Hash the cleaned text (sha256) and check an in-memory LRU of 500 entries. A hit returns `cached: true` with no AI call.
-5. AI call 1 (temperature 0) extracts facts as JSON: CGPA, skills, projects, internships, achievements and DSA. The resume is wrapped in `<resume>` tags and treated as data, which defends against prompt injection. If it isn't a resume, the API returns 422.
+5. AI call 1 (temperature 0) extracts facts as JSON: CGPA, skills, projects, internships, achievements, DSA, the student's first name, 10th/12th percentages, and what kind of document it is. The resume is wrapped in `<resume>` tags and treated as data, which defends against prompt injection.
+   If it isn't a resume, there's no score: a separate AI call roasts the upload itself using only the short document label ("electricity bill") and first name, and the API returns `{ notResume: true, documentType, roast, shareLine }`.
 6. `server/src/lib/score.js` computes the score with fixed rules and returns the reasons shown in the UI.
-7. AI call 2 (temperature 0.9) writes the roast and the plan from the extracted facts and the score only, never the raw resume.
+7. AI call 2 (temperature 0.9) writes the roast and the plan from the extracted facts and the score only, never the raw resume. Each roast gets a random voice and emoji set (`server/src/ai/variety.js`), uses the first name and 10th/12th marks as material, and always finds something to roast. Jokes stay in the roast; strengths, weaknesses and the plan stay factual.
+
+Each result also gets one animated reaction sticker from [Noto Emoji](https://googlefonts.github.io/noto-emoji-animation/) (Google, CC BY 4.0), picked from `client/src/reactions.js` and avoiding the ones that browser saw recently.
 
 Scoring rules (base 10, clamped to 3–98):
 

@@ -1,11 +1,13 @@
 import { forwardRef } from "react";
 import { colorFor } from "../levels.js";
+import Logo from "./Logo.jsx";
 
 export const SITE_URL = (import.meta.env.VITE_SITE_URL || window.location.host).replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 // Fixed 1080×1920 (9:16) story card: chalkboard + taped receipt. Plain CSS only so html-to-image renders it reliably.
-const ShareCard = forwardRef(function ShareCard({ score, level, shareLine, reaction }, ref) {
-  const { hex } = colorFor(level);
+const ShareCard = forwardRef(function ShareCard({ result, reaction }, ref) {
+  const { notResume, score, level, shareLine, documentType } = result;
+  const hex = notResume ? "#cf2a22" : colorFor(level).hex;
   const [emoji, caption] = reaction;
   return (
     <div
@@ -26,7 +28,13 @@ const ShareCard = forwardRef(function ShareCard({ score, level, shareLine, react
           "radial-gradient(45% 30% at 18% 18%, rgba(255,255,255,0.06), transparent 70%), radial-gradient(60% 30% at 50% 100%, rgba(240,120,40,0.28), transparent 70%), radial-gradient(130% 100% at 50% 50%, transparent 55%, rgba(0,0,0,0.6)), #1c2420",
       }}
     >
-      <div style={{ fontFamily: '"Caveat Variable", cursive', fontSize: 64, fontWeight: 700, transform: "rotate(-2deg)" }}>~ placement cooked report ~</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 26, transform: "rotate(-2deg)" }}>
+        <div style={{ width: 170, height: 170 }}><Logo className="h-full w-full" title="Kooked" /></div>
+        <div style={{ textAlign: "left" }}>
+          <div style={{ fontFamily: '"Permanent Marker", cursive', fontSize: 96, lineHeight: 1, color: "#f2b230" }}>KOOKED</div>
+          <div style={{ fontFamily: '"Caveat Variable", cursive', fontSize: 50, fontWeight: 700 }}>placement cooked report</div>
+        </div>
+      </div>
 
       <div
         style={{
@@ -45,9 +53,11 @@ const ShareCard = forwardRef(function ShareCard({ score, level, shareLine, react
       >
         <div style={{ position: "absolute", top: -26, left: 70, width: 220, height: 56, background: "rgba(233,220,180,0.85)", transform: "rotate(-6deg)" }} />
         <div style={{ position: "absolute", top: -26, right: 70, width: 220, height: 56, background: "rgba(233,220,180,0.85)", transform: "rotate(5deg)" }} />
-        <div style={{ fontFamily: '"Courier Prime", monospace', fontSize: 30, letterSpacing: "0.2em", fontWeight: 700, color: "#6b6156" }}>ORDER UP · TOTAL</div>
-        <div style={{ fontFamily: '"Permanent Marker", cursive', fontSize: 300, lineHeight: 1, marginTop: 20, color: hex }}>{score}%</div>
-        <div style={{ fontFamily: '"Courier Prime", monospace', fontSize: 44, fontWeight: 700, letterSpacing: "0.15em" }}>COOKED</div>
+        <div style={{ fontFamily: '"Courier Prime", monospace', fontSize: 30, letterSpacing: "0.2em", fontWeight: 700, color: "#6b6156" }}>
+          {notResume ? `RECEIVED: ${documentType.toUpperCase()}` : "ORDER UP · TOTAL"}
+        </div>
+        <div style={{ fontFamily: '"Permanent Marker", cursive', fontSize: notResume ? 240 : 300, lineHeight: 1, marginTop: 20, color: hex }}>{notResume ? "???%" : `${score}%`}</div>
+        <div style={{ fontFamily: '"Courier Prime", monospace', fontSize: 44, fontWeight: 700, letterSpacing: "0.15em" }}>KOOKED</div>
         <div
           style={{
             display: "inline-block",
@@ -65,7 +75,7 @@ const ShareCard = forwardRef(function ShareCard({ score, level, shareLine, react
             textTransform: "uppercase",
           }}
         >
-          {level.label}
+          {notResume ? "NOT A RESUME" : level.label}
         </div>
         <div style={{ marginTop: 50, borderTop: "4px dashed rgba(42,36,32,0.45)" }} />
         <div style={{ marginTop: 44, fontSize: 52, lineHeight: 1.3, fontWeight: 700 }}>“{shareLine}”</div>
@@ -77,7 +87,7 @@ const ShareCard = forwardRef(function ShareCard({ score, level, shareLine, react
       </div>
 
       <div style={{ marginTop: "auto", textAlign: "center" }}>
-        <div style={{ fontFamily: '"Caveat Variable", cursive', fontSize: 58, fontWeight: 700 }}>how cooked are you? 👇</div>
+        <div style={{ fontFamily: '"Caveat Variable", cursive', fontSize: 58, fontWeight: 700 }}>how kooked are you? 👇</div>
         <div style={{ fontFamily: '"Permanent Marker", cursive', fontSize: 64, color: "#f2b230", marginTop: 8 }}>{SITE_URL}</div>
       </div>
     </div>

@@ -2,6 +2,10 @@ export const extractionSchema = {
   type: "object",
   properties: {
     looksLikeResume: { type: "boolean" },
+    documentType: { type: "string", description: "What this document actually is, in 1-4 words (e.g. 'resume', 'electricity bill', 'lecture notes', 'meme')." },
+    firstName: { type: ["string", "null"], description: "Candidate's first name only, or null." },
+    class10Percent: { type: ["number", "null"], description: "10th / SSC / matric score as a percentage (convert CGPA x 9.5), or null." },
+    class12Percent: { type: ["number", "null"], description: "12th / HSC / intermediate / diploma score as a percentage, or null." },
     cgpa: { type: ["number", "null"], description: "On a 10-point scale. Convert percentage by dividing by 9.5. null if absent." },
     skills: { type: "array", items: { type: "string" } },
     projects: {
@@ -16,7 +20,16 @@ export const extractionSchema = {
     achievements: { type: "array", items: { type: "string" } },
     hasDsa: { type: "boolean" },
   },
-  required: ["looksLikeResume", "cgpa", "skills", "projects", "internships", "achievements", "hasDsa"],
+  required: ["looksLikeResume", "documentType", "firstName", "class10Percent", "class12Percent", "cgpa", "skills", "projects", "internships", "achievements", "hasDsa"],
+};
+
+export const notResumeSchema = {
+  type: "object",
+  properties: {
+    roast: { type: "string", description: "3-4 savage lines with 4-7 varied emojis" },
+    shareLine: { type: "string", maxLength: 90 },
+  },
+  required: ["roast", "shareLine"],
 };
 
 export const roastSchema = {
@@ -48,8 +61,16 @@ export function normalizeFacts(f) {
   if (cgpa !== null && cgpa > 10 && cgpa <= 100) cgpa = cgpa / 9.5;
   if (cgpa !== null && (cgpa < 0 || cgpa > 10)) cgpa = null;
   if (cgpa !== null) cgpa = Math.round(cgpa * 100) / 100;
+  const pct = (v) => (typeof v === "number" && Number.isFinite(v) && v > 0 && v <= 100 ? Math.round(v * 10) / 10 : null);
+  // First name only: one word, letters only, sane length. Anything else is dropped.
+  const firstName = typeof f.firstName === "string" ? f.firstName.trim().split(/\s+/)[0] : "";
+  const docType = typeof f.documentType === "string" ? f.documentType.replace(/[^\p{L}\p{N} &'-]/gu, "").trim().slice(0, 40) : "";
   return {
     looksLikeResume: f.looksLikeResume,
+    documentType: docType || (f.looksLikeResume ? "resume" : "mystery document"),
+    firstName: /^\p{L}[\p{L}'-]{0,19}$/u.test(firstName) ? firstName[0].toUpperCase() + firstName.slice(1).toLowerCase() : null,
+    class10Percent: pct(f.class10Percent),
+    class12Percent: pct(f.class12Percent),
     cgpa,
     skills: strs(f.skills),
     projects: (Array.isArray(f.projects) ? f.projects : [])
@@ -59,6 +80,13 @@ export function normalizeFacts(f) {
     achievements: strs(f.achievements),
     hasDsa: Boolean(f.hasDsa),
   };
+}
+
+export function normalizeNotResume(r) {
+  if (!r || typeof r.roast !== "string" || typeof r.shareLine !== "string") throw new Error("bad roast");
+  let shareLine = r.shareLine.trim();
+  if (shareLine.length > 90) shareLine = shareLine.slice(0, 87).trimEnd() + "…";
+  return { roast: r.roast.trim(), shareLine };
 }
 
 export function normalizeRoast(r) {

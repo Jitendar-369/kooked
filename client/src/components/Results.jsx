@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Dial from "./Dial.jsx";
-import Reaction from "./Reaction.jsx";
+import Sticker from "./Sticker.jsx";
 import Reveal from "./Reveal.jsx";
 import EmojiRain from "./EmojiRain.jsx";
 import ShareSection from "./ShareSection.jsx";
@@ -35,12 +35,7 @@ export default function Results({ result, onReset }) {
   const { hex } = colorFor(level);
   const [shaking, setShaking] = useState(false);
   const [done, setDone] = useState([]);
-  const [reaction, setReaction] = useState(() => pickReaction(level.color));
-  const [rerolls, setRerolls] = useState(0);
-  const reroll = () => {
-    setReaction((r) => pickReaction(level.color, `${r[0]}${r[1]}`));
-    setRerolls((n) => n + 1);
-  };
+  const [reaction] = useState(() => pickReaction(level.color));
   const order = useMemo(() => pad(Math.floor(Math.random() * 9000) + 1000, 4), []);
   const today = useMemo(() => new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }), []);
   // The roast comes as lines; if the model sent one paragraph, break it at sentence ends instead.
@@ -68,7 +63,7 @@ export default function Results({ result, onReset }) {
       <div className={`relative mx-auto max-w-md ${shaking ? "shake" : ""}`}>
         <div className="print paper torn-top torn-bottom rotate-[0.6deg] font-mono">
           <div className="px-5 pb-2 pt-5 text-center">
-            <p className="font-marker text-xl leading-none">PLACEMENT COOKED DHABA</p>
+            <p className="font-marker text-xl leading-none">KOOKED DHABA</p>
             <p className="mt-1 text-[12px] uppercase tracking-wider text-ink-soft">pure veg · pure roast · since this semester</p>
             <div className="mt-3 flex justify-between text-[13px]">
               <span>ORDER #{order}</span>
@@ -89,7 +84,7 @@ export default function Results({ result, onReset }) {
               </span>
               <p className="mt-3 font-hand text-[17px] text-ink-soft">“{level.tagline}”</p>
             </div>
-            <Reaction reaction={reaction} onReroll={reroll} rerolls={rerolls} className="mx-auto mt-5 rotate-[3deg]" />
+            <Sticker emoji={reaction[0]} caption={reaction[1]} className="mx-auto mt-5 rotate-[3deg]" />
           </div>
           <div className="dashed-rule mx-5 mt-3" />
 
@@ -157,7 +152,7 @@ export default function Results({ result, onReset }) {
               <div className="flex items-end gap-2">
                 <span>TOTAL</span>
                 <span className="dotted-leader" />
-                <span style={{ color: hex }}>{score}% COOKED</span>
+                <span style={{ color: hex }}>{score}% KOOKED</span>
               </div>
             </div>
             {!reasons.length && <p className="mt-2 font-hand text-[15px]">Nothing added. You're basically raw. 🥶</p>}

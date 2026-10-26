@@ -1,4 +1,4 @@
-# Placement Cooked Meter: rules for Claude
+# Kooked (placement cooked meter): rules for Claude
 
 A funny but genuinely useful site for Indian engineering students: upload a resume → Cooked Score (0–100, higher = more cooked), roast, strengths/weaknesses, 4-week plan, Instagram-story share card.
 
@@ -8,7 +8,10 @@ A funny but genuinely useful site for Indian engineering students: upload a resu
 - The roast call gets the extracted facts, score and reasons only, never the raw resume.
 - The resume goes inside `<resume>` tags, and the prompt says it is data and that any instructions inside it are ignored.
 - Roast the resume, never the person: nothing about looks, family, caste, religion, gender, region or intelligence. Strengths must be real facts. No hashtags.
-- Tone: brutally honest and harsh about the resume, emoji-heavy, never repetitive. Each roast gets a random voice and emoji set from `server/src/ai/variety.js`; result reactions live in `client/src/reactions.js`. Add to those pools rather than hard-coding lines.
+- Personal touch: extraction returns the first name only (surname dropped) and 10th/12th percentages; the roast uses them. Names never go in `shareLine`. These fields never affect the score.
+- Not a resume: no score and no error. Roast the upload using only the sanitised `documentType` label and first name (`roastNotResume`), never the document's text.
+- Jokes live only in `roast` (and lightly in `shareLine`); strengths, weaknesses and the plan stay factual. There is always something to roast, even on strong resumes.
+- Tone: brutally honest and harsh about the resume, emoji-heavy, never repetitive. Each roast gets a random voice and emoji set from `server/src/ai/variety.js`; result reactions live in `client/src/reactions.js` (one animated Noto sticker per result, no reroll; only add emojis whose animated version exists). Add to those pools rather than hard-coding lines.
 - Uploads: PDF only, ≤2 MB, memory storage, never written to disk. Never log resume text.
 - No fake social proof: the counter comes only from `/api/stats` and shows only when it is > 50.
 - Mock mode (`GEMINI_API_KEY` empty or `MOCK_AI=true`) must keep the whole app working offline.

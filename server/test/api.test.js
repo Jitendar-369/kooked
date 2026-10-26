@@ -57,8 +57,13 @@ test("error cases", async () => {
   assert.match((await r.json()).error, /paste the text/i);
 
   r = await post(srv.base, { text: "Once upon a time there was a dragon who liked to eat mangoes all day long by the river." });
-  assert.equal(r.status, 422);
-  assert.equal((await r.json()).error, "That doesn't look like a resume, bro 💀");
+  assert.equal(r.status, 200);
+  const nr = await r.json();
+  assert.equal(nr.notResume, true);
+  assert.equal(nr.documentType, "story");
+  assert.equal(nr.score, undefined);
+  assert.match(nr.roast, /story/);
+  assert.ok(nr.shareLine.length < 90);
 
   const fd = new FormData();
   fd.append("resume", new Blob(["hello"], { type: "text/plain" }), "x.txt");

@@ -1,5 +1,5 @@
 // Offline stand-in for Gemini: regex extraction + template roast, same interface as gemini.js.
-import { normalizeFacts, normalizeRoast } from "./schemas.js";
+import { normalizeFacts, normalizeRoast, normalizeNotResume } from "./schemas.js";
 import { pickVariety } from "./variety.js";
 
 const SKILLS = [
@@ -21,6 +21,39 @@ function section(lines, name) {
   const out = first ? [first] : [];
   for (let i = start + 1; i < lines.length && !HEADINGS.test(lines[i].trim()); i++) out.push(lines[i]);
   return out.map((l) => l.replace(/^[\s•\-*–·]+/, "").trim()).filter(Boolean);
+}
+
+const NOT_NAMES = /^(resume|curriculum|vitae|cv|profile|summary|education|contact|name|email|phone)$/i;
+
+function guessFirstName(lines) {
+  const first = lines.map((l) => l.trim()).find(Boolean) ?? "";
+  const m = first.match(/^(?:name\s*[:\-]\s*)?([A-Za-z][a-z]+|[A-Z]{2,})(?:\s+[A-Za-z.]+){0,3}$/);
+  return m && !NOT_NAMES.test(m[1]) ? m[1] : null;
+}
+
+function boardPercent(text, label) {
+  const line = text.split("\n").find((l) => label.test(l));
+  if (!line) return null;
+  const pct = line.match(/(\d{2}(?:\.\d+)?)\s*%/);
+  if (pct) return parseFloat(pct[1]);
+  const cg = line.match(/(\d(?:\.\d{1,2})?)\s*(?:\/\s*10|cgpa)/i);
+  return cg ? Math.round(parseFloat(cg[1]) * 9.5 * 10) / 10 : null;
+}
+
+const DOC_TYPES = [
+  [/electricity|kwh|units consumed/i, "electricity bill"],
+  [/water (bill|charges)|water supply/i, "water bill"],
+  [/invoice|amount due|bill no|gst/i, "bill"],
+  [/ingredients|tablespoon|teaspoon|preheat/i, "recipe"],
+  [/pnr|boarding|berth|departure/i, "train ticket"],
+  [/chapter|lecture|unit \d|syllabus/i, "lecture notes"],
+  [/dear |regards|sincerely/i, "letter"],
+  [/once upon a time|dragon|kingdom/i, "story"],
+  [/menu|paneer|biryani|thali/i, "food menu"],
+];
+
+function guessDocType(text) {
+  return DOC_TYPES.find(([re]) => re.test(text))?.[1] ?? "random text";
 }
 
 export function mockExtract(text) {
@@ -58,7 +91,19 @@ export function mockExtract(text) {
 
   const hasDsa = /leetcode|codeforces|codechef|hackerrank|\bdsa\b|data structures|competitive programming/i.test(text);
 
-  return normalizeFacts({ looksLikeResume, cgpa, skills, projects, internships, achievements, hasDsa });
+  return normalizeFacts({
+    looksLikeResume,
+    documentType: looksLikeResume ? "resume" : guessDocType(text),
+    firstName: guessFirstName(lines),
+    class10Percent: boardPercent(text, /(?:10th|\bssc\b|class\s*(?:x|10)\b|matric|cbse\s*x\b|(?<!senior )secondary school)/i),
+    class12Percent: boardPercent(text, /(?:12th|\bhsc\b|class\s*(?:xii|12)\b|intermediate|diploma|senior secondary)/i),
+    cgpa,
+    skills,
+    projects,
+    internships,
+    achievements,
+    hasDsa,
+  });
 }
 
 const pick = (arr, rng) => arr[Math.floor(rng() * arr.length)];
@@ -139,11 +184,51 @@ const JABS = {
     "Skills section is so short it fits in a tweet {e}",
     "Listing {s} alone as your skill set is a bold strategy {e}",
   ],
-  none: [
-    "The only red flag is that you might get bored in the interview {e}",
-    "Honestly the weakest part is the font choice {e}",
-  ],
 };
+
+const NAME_HOOKS = ["{f}, we need to talk {e}", "{f} bro... sit down {e}", "Okay {f}, deep breath {e}", "{f}, the recruiter has questions {e}", "Dear {f}, this is an intervention {e}"];
+
+// Always something to roast, even when the big stuff is fine.
+function smallJabs(facts) {
+  const out = [];
+  const cert = facts.achievements.find((a) => /certif|course|udemy|coursera|nptel/i.test(a));
+  if (cert) out.push(`"${cert.slice(0, 40)}"? Got this cert for what, a free t-shirt? {e}`);
+  if (facts.projects.some((p) => !p.isBasic)) out.push("{p} looks great. Be honest, how much of it did ChatGPT write? {e}");
+  if (facts.class10Percent !== null && facts.class10Percent < 85) out.push(`${facts.class10Percent}% in 10th? Bro peaked in 9th {e}`);
+  if (facts.class10Percent !== null && facts.class12Percent !== null && facts.class12Percent < facts.class10Percent - 8)
+    out.push(`${facts.class10Percent}% in 10th, ${facts.class12Percent}% in 12th. The downfall arc is real {e}`);
+  if (facts.skills.length > 12) out.push("{k} skills listed. Name three you can actually defend in an interview {e}");
+  out.push("Skills section looks copy-pasted from a job description {e}");
+  return out;
+}
+
+const NOT_RESUME = [
+  "You had ONE job: upload a resume. You uploaded a {d} {e}",
+  "{f}, is this your {d}? Recruiters asked for a resume, not your personal documents {e}",
+  "Bro really said 'here's my {d}' to a resume roaster {e}",
+  "If this is how you follow instructions, the online assessment is going to be a bloodbath {e}",
+  "HR opened this {d} and started questioning their career {e}",
+  "Can't find your own resume? That's already your first red flag {e}",
+  "Imagine walking into the interview and handing them a {d} {e}",
+  "Even the ATS is confused, and the ATS has seen things {e}",
+];
+const NOT_RESUME_SHARE = [
+  "I uploaded a {d} to a resume roaster {e}",
+  "Tried to get my resume roasted, uploaded a {d} instead {e}",
+  "Placement prep status: uploaded my {d} {e}",
+];
+
+export function mockRoastNotResume({ documentType, firstName }, rng = Math.random) {
+  const pool = [...pickVariety(rng).emojis];
+  const e = () => (pool.length ? pool.splice(Math.floor(rng() * pool.length), 1)[0] : "💀");
+  const fill = (t) =>
+    t.replace(/\{(\w)\}/g, (_, k) => (k === "e" ? e() : k === "d" ? documentType : firstName ?? "Bro")).replace(/\ba ([aeiou])/gi, "an $1");
+  const lines = [...NOT_RESUME].sort(() => rng() - 0.5).slice(0, 3).map(fill);
+  lines.push(fill("Go find the actual resume and come back {e}"));
+  let shareLine = fill(pick(NOT_RESUME_SHARE, rng));
+  if (shareLine.length > 89) shareLine = "I uploaded the wrong file to a resume roaster 💀";
+  return normalizeNotResume({ roast: lines.join("\n"), shareLine });
+}
 
 const CLOSERS = {
   top: ["Just don't get lazy now {e}", "Keep this energy till the offer letter {e}", "Go collect your offers {e}"],
@@ -175,18 +260,25 @@ export function mockRoast({ facts, score, level, reasons }, rng = Math.random) {
     c: facts.cgpa ?? "?",
     n: score,
     y: new Date().getFullYear(),
+    f: facts.firstName ?? "bro",
+    k: facts.skills.length,
   };
   const fill = (t) => t.replace(/\{(\w)\}/g, (_, k) => (k === "e" ? e() : String(vars[k])));
 
   const jabFor = (r) => {
-    if (!r) return pick(JABS.none, rng);
+    if (!r) return pick(smallJabs(facts), rng);
     if (JABS[r.reason]) return pick(JABS[r.reason], rng);
     if (r.reason.startsWith("CGPA") || r.reason === "No CGPA mentioned") return pick(JABS.cgpa, rng);
     return pick(JABS.skills, rng);
   };
+  // 10th/12th marks are prime roast material, so they win the second slot when present.
+  const marksJab = smallJabs(facts).find((j) => /in 10th/.test(j));
   const lines = [pick(OPENERS[b], rng), jabFor(top[0])];
-  if (top[1] && b !== "top") lines.push(jabFor(top[1]));
-  lines.push(pick(CLOSERS[b], rng));
+  if (marksJab) lines.push(marksJab);
+  else if (top[1] && b !== "top") lines.push(jabFor(top[1]));
+  else lines.push(pick(smallJabs(facts), rng));
+  if (facts.firstName) lines.unshift(pick(NAME_HOOKS, rng));
+  else lines.push(pick(CLOSERS[b], rng));
   const roast = lines.map(fill).join("\n");
 
   const strengths = [];
@@ -240,5 +332,6 @@ export function createMockProvider() {
     name: "mock",
     extract: async (cleanText) => mockExtract(cleanText),
     roast: async (input) => mockRoast(input),
+    roastNotResume: async (input) => mockRoastNotResume(input),
   };
 }

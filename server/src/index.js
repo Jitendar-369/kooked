@@ -11,5 +11,5 @@ const app = createApp({
 
 app.listen(port, () => {
   const mode = isMockMode() ? "(MOCK AI)" : `(Gemini: ${process.env.GEMINI_MODEL || "gemini-3.5-flash"})`;
-  console.log(`🔥 Placement Cooked Meter API on http://localhost:${port} ${mode}`);
+  console.log(`🔥 Kooked API on http://localhost:${port} ${mode}`);
 });

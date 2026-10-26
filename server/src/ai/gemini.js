@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
-import { extractionSchema, roastSchema, normalizeFacts, normalizeRoast } from "./schemas.js";
+import { extractionSchema, roastSchema, notResumeSchema, normalizeFacts, normalizeRoast, normalizeNotResume } from "./schemas.js";
 import { pickVariety } from "./variety.js";
-import { EXTRACT_SYSTEM, ROAST_SYSTEM, extractPrompt, roastPrompt } from "./prompts.js";
+import { EXTRACT_SYSTEM, ROAST_SYSTEM, NOT_RESUME_SYSTEM, extractPrompt, roastPrompt, notResumePrompt } from "./prompts.js";
 
 export function createGeminiProvider({ apiKey, model = "gemini-3.5-flash", client } = {}) {
   const ai = client ?? new GoogleGenAI({ apiKey });
@@ -48,6 +48,14 @@ export function createGeminiProvider({ apiKey, model = "gemini-3.5-flash", clien
         schema: roastSchema,
         temperature: 0.9,
         normalize: normalizeRoast,
+      }),
+    roastNotResume: (input) =>
+      callJson({
+        system: NOT_RESUME_SYSTEM,
+        prompt: notResumePrompt({ ...input, variety: pickVariety() }),
+        schema: notResumeSchema,
+        temperature: 0.95,
+        normalize: normalizeNotResume,
       }),
   };
 }
